@@ -18,7 +18,7 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Globalization;
 using Newtonsoft.Json;
-
+using Newtonsoft.Json.Linq;
 
 namespace Rhino.Service
 {
@@ -1173,7 +1173,14 @@ namespace Rhino.Service
 
             try
             {
+                //var object = head.tipo;
+                dynamic details = JObject.Parse(data["json"]);
+                //string tipo = details["tipo"];
                 objeto c = jss.Deserialize<objeto>(_json);
+                if (details["tipo"] == "10")
+                {
+                    c.af = "0";
+                }
                 c.estado = 1;
                 conn.objeto.Add(c);
                 if (Convert.ToInt32(head["tipo_articulo"]) == 2){
@@ -1678,10 +1685,18 @@ namespace Rhino.Service
             dynamic data = jss.DeserializeObject(json);
             List<object> arr = new List<object>();
             int tipo_objeto = Convert.ToInt32(data["tipo"]);
+            
             var obj = conn.objeto.Where(a => a.tipo_articulo == 1).ToList();
             if (tipo_objeto != 5)
             {
-                obj = conn.objeto.Where(a => a.tipo.Equals(tipo_objeto) && a.tipo_articulo == 1 && a.estado != 7).ToList();
+                if(tipo_objeto == 1)
+                {
+                    obj = conn.objeto.Where(a => a.tipo.Equals(tipo_objeto) && a.tipo_articulo == 1 && a.estado != 7 && a.af != "0").ToList();
+                }
+                else if(tipo_objeto == 6)
+                {
+                    obj = conn.objeto.Where(a => a.tipo.Equals(1) && a.tipo_articulo == 1 && a.estado != 7 && a.af == "0").ToList();
+                }
             }
             int sum = 0;
             foreach (var item in obj)
